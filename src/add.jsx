@@ -66,6 +66,7 @@ function Add(){
             return(
                 <React.Fragment>
                     <h1>Declare your class</h1>
+                    <p>If you have logged in with Google but nothing happens, and you are using the Safari browser, use chrome instead.</p>
                     <GoogleLogin
                         clientId="426198628749-f9vsh5h4njsqf6bljh0tqiv2tebj9m4e.apps.googleusercontent.com"
                         buttonText="SJI account"
