@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import Navbar from './navbar';
 import GoogleLogin from 'react-google-login';
 import M from 'materialize-css';
@@ -12,20 +12,28 @@ function Add(){
     const [studentClass, setStudentClass] = useState(0);
     const [previous_class, setPrevious_class] = useState(0);
     const [pic, setPic] = useState(0);
+    const [googleapidata, setGoogleapidata] = useState(0);
     
     const responseGoogle = (response) => {
         // console.log(response);
     }
-    
-    const success = (response) => {
-        // console.log(response);
-        const email = response.xt.du;
+
+    const isFirstRun = useRef(true);
+    useEffect(() => {
+        if (isFirstRun.current) {
+            isFirstRun.current = false;
+            return;
+        }
+
+        let googleapidata2 = googleapidata[0];
+
+        const email = googleapidata2.data.email;
         if (/@sji.edu.sg\s*$/.test(email)) {
-            const name = response.xt.vT;
-            const googleId = response.tokenId;
-            let previous_class = response.xt.sV;
+            const name = googleapidata2.data.family_name;
+            const googleId = googleapidata[1];
+            let previous_class = googleapidata2.data.given_name;
             previous_class= previous_class.substring(0, previous_class.length - 4);
-            const pic = response.xt.iK;
+            const pic = googleapidata2.data.picture;
             setStage('1');
             setName(name);
             setGoogleId(googleId);
@@ -35,6 +43,20 @@ function Add(){
         } else {
             M.toast({html: 'Use an SJI email!'});
         }
+    }, [googleapidata]);
+
+    const getAccDetails = (tokenId) => {
+        axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${tokenId}`)
+            .then( (response) => {
+                setGoogleapidata([response, tokenId]);
+            })
+            .catch( (error) => {
+                console.log(error);
+        });  
+    }
+    
+    const success = (response) => {
+        getAccDetails(response.tokenObj.id_token);
     }
 
     const saveClass = (studentClass) => {
@@ -42,11 +64,11 @@ function Add(){
         setStudentClass(studentClass);
         setPercentage('66%');
     }
-    // https://amazing-galileo-55dae6.netlify.app?name=${name}&new_class=${studentClass}&picture_url='abc'&previous_class='abc'&google_id=${googleId}
+
     const submit = () => {
         axios.get(`https://thebuses.000webhostapp.com/random/sjiclasses/add?name=${name}&new_class=${studentClass}&picture_url=${pic}&previous_class=${previous_class}&google_id=${googleId}`)
             .then( (response) => {
-                // console.log("response", response);
+                console.log(response);
                 // this.setState({
                 // fetchUser: response.data
                 // });
@@ -112,7 +134,7 @@ function Add(){
                     <h1>Confirm that your class is <span style={{fontWeight:"bold",color:"#ff1744"}}>{studentClass}</span></h1>
                     <h4>You can't change the class once you declared it</h4><br/><br/>
                     <a onClick={() => {setStage('1');setPercentage('33%')}} className="waves-effect waves-light btn-large"  style={{margin:"20px 60px 0 0"}}><i class="material-icons left">arrow_back</i>There is a mistake, change the class</a>
-                    <a onClick={() => {submit()}} className="waves-effect waves-light btn-large" style={{margin:"20px 0 0 0"}}><i class="material-icons right">arrow_forward</i>Class chosen is correct, submit</a>
+                    <a onClick={() => {submit()}} className="waves-effect waves-light btn-large" style={{margin:"20px 0 0 0"}}><i className="material-icons right">arrow_forward</i>Class chosen is correct, submit</a>
                 </React.Fragment>
             );
         } else if (stage === '3') {
