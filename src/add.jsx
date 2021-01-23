@@ -68,7 +68,6 @@ function Add(){
     const submit = () => {
         axios.get(`https://thebuses.000webhostapp.com/random/sjiclasses/add?name=${name}&new_class=${studentClass}&picture_url=${pic}&previous_class=${previous_class}&google_id=${googleId}`)
             .then( (response) => {
-                console.log(response);
                 // this.setState({
                 // fetchUser: response.data
                 // });
